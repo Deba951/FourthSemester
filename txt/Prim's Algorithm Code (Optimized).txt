@@ -1,0 +1,202 @@
+#include<stdio.h>
+#include<limits.h>
+#define v 6
+#define heapCapacity 20
+
+int heapSize=v;
+
+struct data
+{
+    int key;
+    char parent;
+    char sptset;
+}vertex[v+1];
+
+int PQueue[heapCapacity];
+int indexTracker[v+1];
+
+int isEmpty()
+{
+    if(heapSize>=1)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+void heapAdjust(int i,int n)
+{
+    int temp=PQueue[i];int j=2*i,key1=vertex[PQueue[i]].key;
+    while(j<=n)
+    {
+        if(j<n && vertex[PQueue[j]].key>vertex[PQueue[j+1]].key)
+        {
+            j++;
+        }
+        if(key1<=vertex[PQueue[j]].key)
+        {
+            break;
+        }
+        PQueue[j/2]=PQueue[j];
+        indexTracker[PQueue[j/2]]=j/2;
+        j*=2;
+    }
+    PQueue[j/2]=temp;
+    indexTracker[temp]=j/2;
+}
+
+int extractMin()
+{
+    if(heapSize==0)
+    {
+        return INT_MIN;
+    }
+    else if(heapSize==1)
+    {
+        heapSize--;
+        return PQueue[1];
+    }
+    else
+    {
+        int min=PQueue[1];
+        PQueue[1]=PQueue[heapSize];
+        heapSize--;
+        indexTracker[PQueue[1]]=1;
+        heapAdjust(1,heapSize);
+        return min;
+    }
+}
+
+int parent(int i)
+{
+    return i/2;
+}
+
+void decreaseKey(int i,int newVal)
+{
+    if(i<1 || i>heapSize)
+    {
+        printf("\nSorry.Not possible.");
+        return;
+    }
+    vertex[PQueue[i]].key=newVal;
+    while(parent(i)>=1 && vertex[PQueue[parent(i)]].key>vertex[PQueue[i]].key)
+    {
+        int t=PQueue[parent(i)];
+        PQueue[parent(i)]=PQueue[i];
+        indexTracker[PQueue[parent(i)]]=parent(i);
+        PQueue[i]=t;
+        indexTracker[PQueue[i]]=i;
+        i=parent(i);
+    }
+}
+
+void makePriorityQueue()
+{
+    for(int i=1;i<=v;i++)
+    {
+        PQueue[i]=i;
+    }
+    for(int i=v/2;i>=1;i--)
+    {
+        heapAdjust(i,v);
+    }
+    for(int i=1;i<=v;i++)
+    {
+        indexTracker[PQueue[i]]=i;
+    }
+}
+
+void Prim(int G[][v+1],int r)
+{
+    for(int i=1;i<=v;i++)
+    {
+        vertex[i].key=INT_MAX;
+        vertex[i].parent='n';
+        vertex[i].sptset='F';
+    }
+    vertex[r].key=0;
+
+    makePriorityQueue();
+
+    while(isEmpty()==0)
+    {
+        int u=extractMin();
+        if(u!=INT_MIN)
+        {
+            vertex[u].sptset='T';
+            for(int i=1;i<=v;i++)
+            {
+                if(G[u][i]>0 && vertex[i].sptset=='F' && vertex[i].key>G[u][i])
+                {
+                    decreaseKey(indexTracker[i],G[u][i]);                 // O(V X E X log V)
+                    vertex[i].parent=(char)(u+64);
+                }
+            }
+        }
+    }
+}
+
+void print()
+{
+    int cost=0;
+    printf("\n\n");
+    for(int i=1;i<=v;i++)
+    {
+        if(i!=v)
+        {
+            printf("%c -> %c , ",(char)(i+64),vertex[i].parent);
+        }
+        else
+        {
+            printf("%c -> %c .",(char)(i+64),vertex[i].parent);
+        }
+        cost+=vertex[i].key;
+    }
+    printf("\n\nThe cost of the Minimum Spanning Tree is : %d\n",cost);
+}
+    
+
+
+void main()
+{
+    int r;
+    printf("\n\n---------- : PRIM'S ALGORITHM : ----------\n\n");
+    FILE *fp;
+    fp=fopen("Graph.txt","r");
+    if(fp==NULL)
+    {
+        printf("\nError in opening the file !\n");
+    }
+    else
+    {
+        int k;
+        fscanf(fp,"%d",&k);
+        int G[v+1][v+1];
+        for(int i=1;i<=v;i++)
+        {
+            for(int j=1;j<=v;j++)
+            {
+                fscanf(fp,"%d",&G[i][j]);
+            }
+        }
+        fclose(fp);
+
+        printf("\nKindly enter the starting vertex : ");
+        scanf("%d",&r);
+
+        if(r>=1 && r<=v)
+        {
+            printf("\nThe Minimum Spanning Tree is : ");
+            Prim(G,r);
+            print();
+        }
+        else
+        {
+            printf("\nSorry ! Invalid input.");
+        }
+    }
+}

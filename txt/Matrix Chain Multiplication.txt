@@ -1,0 +1,71 @@
+#include<stdio.h>
+#include<limits.h>
+struct matrix
+{
+    int row;
+    int col;
+};
+
+void POP(int i,int j,int n,int S[][n])
+{
+    if(i==j)
+    {
+        printf(" M%d ",i);
+    }
+    else
+    {
+        printf(" ( ");
+        POP(i,S[i][j],n,S);
+        POP(S[i][j]+1,j,n,S);
+        printf(" ) ");
+    }
+}
+
+void MatrixChainOrder(int p[],int n)
+{
+    int M[n+1][n+1],S[n+1][n+1];
+    for(int i=1;i<=n;i++)
+    {
+        M[i][i]=0;
+    }
+    
+    for(int len=2;len<=n;len++)
+    {
+        for(int i=1;i<=n-len+1;i++)
+        {
+            int j=i+len-1;
+            M[i][j]=INT_MAX;
+            for(int k=i;k<=j-1;k++)
+            {
+                int cost=M[i][k]+M[k+1][j]+p[i-1]*p[k]*p[j];
+                if(cost<M[i][j])
+                {
+                    M[i][j]=cost;
+                    S[i][j]=k;
+                }
+            }
+        }
+    }
+    printf("\nLet the matrix is denoted by M :- \nThe optimized order in which the matrices should be multiplied is :-\n");
+    POP(1,n,n+1,S);
+}
+
+int main()
+{
+    int a;
+    printf("Enter the number of matrices to be multipled : ");
+    scanf("%d",&a);
+    struct matrix m[a];
+    int p[a+1];
+    for(int i=0;i<a;i++)
+    {
+        printf("\nFor matrix %d :- \n",i+1);
+        printf("Row : ");
+        scanf("%d",&m[i].row);
+        printf("Column : ");
+        scanf("%d",&m[i].col);
+        p[i]=m[i].row;
+    }
+    p[a]=m[a-1].col;
+    MatrixChainOrder(p,a);
+}

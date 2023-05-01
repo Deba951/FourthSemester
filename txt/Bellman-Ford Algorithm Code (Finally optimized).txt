@@ -1,0 +1,133 @@
+#include<stdio.h>
+#include<limits.h>
+#define v 5
+
+struct data
+{
+    int key;
+    char parent;
+}vertex[v+1];
+
+void path(int i)
+{
+    if(vertex[i].parent=='N')
+    {
+        return;
+    }
+    else
+    {
+        path((int)vertex[i].parent-64);
+        printf("  %c to %c",vertex[i].parent,(char)(i+64));
+    }
+}
+
+void print(int s,int G[][v+1])
+{
+    int cost=0;
+    printf("\n");
+    for(int i=1;i<=v;i++)
+    {
+        if(i!=s)
+        {
+            printf("\nVertex %c : ",(char)(i+64));
+            path(i);
+            if(vertex[i].key!=INT_MAX)
+            printf(". The cost is : %d",vertex[i].key);
+            else
+            printf(". The cost is : infinite");
+        }
+    }
+}
+
+void print_details()
+{
+    printf("\n");
+    for(int i=1;i<=v;i++)
+    {
+        printf("\nVertex : %c (Key = %d , Parent = %c)",(char)(i+64),vertex[i].key,vertex[i].parent);
+    }
+}
+
+char belmann_Ford(int G[][v+1],int s)
+{
+    for(int i=1;i<=v;i++)
+    {
+        vertex[i].key=INT_MAX;   
+        vertex[i].parent='N';
+    }
+    vertex[s].key=0;              // Setting the key value of start vertex as 0
+    for(int a=1;a<=v-1;a++)
+    {
+        for(int i=1;i<=v;i++)
+        {
+            for(int j=1;j<=v;j++)
+            {
+                if(G[i][j]!=0 && vertex[i].key!=INT_MAX && vertex[i].key+G[i][j]<vertex[j].key) // Also checking if the vertex in which we are standing does not have the key value equals to INT_MAX
+                {
+                    vertex[j].key=vertex[i].key+G[i][j];           // Updating the key value
+                    vertex[j].parent=(char)(i+64);
+                }
+            }
+        }
+    }
+
+    for(int i=1;i<=v;i++)
+    {
+        for(int j=1;j<=v;j++)
+        {
+            if(G[i][j]>0 && vertex[i].key!=INT_MAX && vertex[i].key+G[i][j]<vertex[j].key)
+            {
+                return 'F';             // Returning False 
+            }
+        }
+    }
+    return 'T';                        // Returning True
+}
+
+void main()
+{
+    int r;
+    printf("\n\n---------- : BELLMAN-FORD ALGORITHM : ----------\n\n");
+    FILE *fp;
+    fp=fopen("bel_graph.txt","r");
+    if(fp==NULL)
+    {
+        printf("\nError in opening the file !\n");
+    }
+    else
+    {
+        fscanf(fp,"%d",&r);
+        int G[v+1][v+1];
+        for(int i=1;i<=v;i++)
+        {
+            for(int j=1;j<=v;j++)
+            {
+                fscanf(fp,"%d",&G[i][j]);
+            }
+        }
+        fclose(fp);
+
+        printf("\nKindly enter the starting vertex : ");
+        scanf("%d",&r);
+
+        if(r>=1 && r<=v)
+        {
+            char c=belmann_Ford(G,r);
+            if(c=='F')
+            {
+                printf("\nSorry.Can't calculate the exact result since the graph contains negative weighted cycle.");
+            }
+            else
+            {
+                printf("\nThe details of the vertices are : ");
+                print_details();
+                printf("\n\nThe shortest path from the vertex %c to all the vertices are : ",(char)(64+r));
+                print(r,G);
+            }
+        }
+        else
+        {
+            printf("\nSorry ! Invalid input.");
+        }
+    }
+}

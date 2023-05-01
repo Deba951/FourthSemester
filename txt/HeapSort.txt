@@ -1,0 +1,87 @@
+#include<stdio.h>
+ 
+void heapify(int i,int n,int arr[n])
+{
+    int j=i*2;
+    int key=arr[i];
+    int limit=(n%2)?n:n-1;
+    while(j<=limit)
+    {
+        if(j<n && arr[j+1]>arr[j])    // O(1)
+        {
+            j=j+1;
+        }
+        if(key<arr[j])  // O(1)
+        {
+            arr[i]=arr[j];
+            i=j;
+            j=j*2;
+        }
+        else
+        { 
+            break;
+        }
+    }
+    arr[j/2]=key;
+}
+ 
+void delete(int n,int arr[n])
+{
+    int i=1,j=i*2,val=arr[1];
+    arr[1]=arr[n];
+    while(j<=n-1)    // O(log n)
+    {
+        if(arr[j+1]>arr[j])
+        {
+            j=j+1;
+        }
+        if(arr[i]<arr[j])
+        {
+            int temp=arr[i];
+            arr[i]=arr[j];
+            arr[j]=temp;
+            i=j;
+            j=2*i;
+        }
+        else
+        {
+            break;
+        }
+    }
+    arr[n]=val;
+}
+ 
+void heapSort(int n,int arr[n])
+{
+    for(int i=n/2;i>=1;i--)  // O(n/2) = O(n)
+    {
+        heapify(i,n,arr);
+    }
+    for(int i=1;i<=n;i++)   // O(n)
+    {
+        delete(n-i+1,arr);
+    }
+}
+ 
+void display(int n,int arr[n]) 
+{
+    for(int i=1;i<=n;i++)  // O(n)
+    {
+        printf("%d ",arr[i]);
+    }
+}
+ 
+void main()
+{
+    int heap[100],c;
+    printf("\nEnter the number of elements you wish to enter : ");
+    scanf("%d",&c);
+    for(int i=1;i<=c;i++)
+    {
+        printf("\nEnter element %d : ",i);
+        scanf("%d",&heap[i]);
+    }
+    heapSort(c,heap);         // O(n + nlog n)
+    printf("\nThe sorted array (Max Heap) is : \n");
+    display(c,heap);          // O(n)
+}
